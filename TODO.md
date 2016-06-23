@@ -2,7 +2,4 @@
 
 ## gulp related
 
-- Add autoprefixer
-- Adopt karma config for testing tasks
-- Update README
-- Remove grunt configuration and npm modules
+moved to issue [#122](https://github.com/Beit-Hatfutsot/dbs-front/issues/122)
