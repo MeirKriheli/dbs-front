@@ -14,10 +14,9 @@ var gulp = require('gulp'),
 
 var htmlminOpts = {
   removeComments: true,
-  collapseWhitespace: true,
+  /*collapseWhitespace: true,*/
   removeEmptyAttributes: false,
-  collapseBooleanAttributes: true,
-  removeRedundantAttributes: true
+  collapseBooleanAttributes: true
 };
 
 /**
@@ -174,6 +173,7 @@ gulp.task('serve:dist', function() {
   g.connect.server({
     port: 3000,
     root: ['./dist'],
+    fallback: './dist/index.html',
     middleware: function() {
       return [
         // place required middleware here
@@ -274,7 +274,7 @@ function appFiles () {
     '!./js/**/*Spec.js',
     '!./js/modules/config/**',
     '!./js/test/**',
-    '!./js/modules/main/test/**'
+    '!./js/modules/*/test/**'
   ];
   return gulp.src(files)
     .pipe(g.naturalSort())

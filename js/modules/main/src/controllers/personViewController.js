@@ -1,14 +1,14 @@
 var PersonViewController = function ($http, $window, $document, $rootScope,
-							       $scope, $state, $stateParams, apiClient,
+							       $scope, $state, $stateParams, item,
 							       recentlyViewed, langManager, ftreeLayout,
 								   notification) {
-	var self = this, script_loaded = true, node = {};
+	var self = this, script_loaded = true, node = undefined;
 	this.$scope = $scope;
 	this.$rootScope = $rootScope;
 	this.$state = $state;
 	this.$http = $http;
 	this.$window = $window;
-	this.apiClient = apiClient;
+	this.item = item;
 	this.recentlyViewed = recentlyViewed;
 	this.langManager = langManager;
 	this.notification = notification;
@@ -56,21 +56,6 @@ var PersonViewController = function ($http, $window, $document, $rootScope,
         // - siblingMargin: (horizontal,vertical,right)
         siblingMargin: { horizontal:10, vertical:34, right:30, top: -50 },
     });
-	/* TODO: dynamiclly load d3
-    var scriptTag = document[0].createElement('script');
-    scriptTag.type = 'text/javascript';
-    scriptTag.async = true;
-    scriptTag.src = 'js/lib/d3.min.js';
-    scriptTag.onload = function () {
-		self.d3 = $window.d3;
-		var element = document.getElementById('tree-layout');
-		self.layoutEngine.chartSize =  new Tuple(element.clientWidth, element.clientHeight);
-		if (node != {})
-			self.render(node);
-	}
-    var s = document[0].getElementsByTagName('body')[0];
-    s.appendChild(scriptTag);
-    */
    self.detailsShown = false;
    $rootScope.$on('$stateChangeStart',
 			  function(event, toState, toParams, fromState, fromParams){
@@ -88,8 +73,14 @@ var PersonViewController = function ($http, $window, $document, $rootScope,
 	document.documentElement.addEventListener('mouseup', function (e) {
 		self.mouseUp(e)
 	});
-	this.load($stateParams);
-	$rootScope.title = '';
+  $rootScope.title = '';
+  if (!$window.d3)
+    jQuery.getScript('https://d3js.org/d3.v3.min.js', function () {
+      // if the node is already loaded, render it
+      if ((self.node !== undefined))
+        self.render(self.node);
+    })
+  this.load($stateParams);
 };
 
 PersonViewController.prototype = {
@@ -125,14 +116,14 @@ PersonViewController.prototype = {
 
 	load: function (params) {
 		var self = this,
-			apiUrl = this.apiClient.base_url+
-				['/person',  params.tree_number, params.node_id].join('/');
+        slug = 'person_' + params.tree_number + '.' + params.node_id;
 
 		self.notification.loading(true);
-		self.$http.get(apiUrl, { cache: true })
-			.success(function (item_data) {
+		self.item.get(slug)
+			.then(function (item_data) {
 				var name = self.get_full_name(item_data.tree),
 					thumbnail = null;
+				self.node = item_data;
 				if (item_data.thumbnail)
 					thumbnail = item_data.thumbnail.data;
 				self.recentlyViewed.put({
@@ -143,14 +134,14 @@ PersonViewController.prototype = {
 				});
 				self.tree_number = params.tree_number;
 				// self.detailsShown = true;
-				self.node = item_data;
+        self.node.Slug = {En: slug};
 				self.$rootScope.title = self.get_full_name(self.node.tree);
 
 				self.notification.loading(false);
-				if (d3 != null)
+				if (self.$window.d3)
 					self.render(self.node)
 				else
-					console.log("where's d3?")
+					console.log("waiting for d3 to load")
 			}, function (response) {
 				console.log('error walking the tree', response)
 				console.log(response);
@@ -233,6 +224,11 @@ PersonViewController.prototype = {
 			siblingsClusters = -1;
 		data.push( this.getElement(cn, 'individual') );
 		if ( 'parents' in cn ) {
+      // create the parents_ids helper array
+      var parents_ids = []
+      cn.parents.forEach(function (parent, _parent) {
+        parents_ids[_parent] = parent.id;
+      });
 			cn.parents.forEach(function (parent, _parent) {
 				data.push( self.getElement(parent,'parent') );
 				if ( _parent == 0 ) {
@@ -263,9 +259,9 @@ PersonViewController.prototype = {
 					});
 				}
 				if ( parent.partners ) {
-					parent.partners.forEach( function (stepparent, _stepparent) {
-						// make sure it's really a stepparent
-						if ((cn.parents.length == 1) || (stepparent.id != cn.parents[1-_parent].id)) {
+					parent.partners.forEach( function (stepparent) {
+						// make sure it's really a stepparent == not one of the parents
+						if (parents_ids.indexOf(stepparent.id) == -1) {
 							data.push( self.getElement(stepparent,'stepparent') );
 							vdata.push( self.getVertex(stepparent, parent, 'spouse') );
 						}
@@ -610,6 +606,6 @@ PersonViewController.prototype = {
 
 angular.module('main').controller('PersonViewController',
 			  ['$http', '$window', '$document', '$rootScope', '$scope',
-			   '$state', '$stateParams', 'apiClient', 'recentlyViewed',
+			   '$state', '$stateParams', 'item', 'recentlyViewed',
 			   'langManager', 'ftreeLayout', 'notification',
 			   PersonViewController]);

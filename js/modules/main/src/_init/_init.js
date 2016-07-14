@@ -24,6 +24,7 @@ angular.module('main', [
     'apiClient',
     'cache',
     'plumb',
+    'social',
     'rcSubmit',
     'gedcomParser',
 	'hc.marked',
@@ -140,6 +141,18 @@ function($urlRouterProvider, $stateProvider, $locationProvider, $httpProvider, $
             templateUrl: 'templates/main/search-results.html'
         },
 
+
+        {
+            name: 'story',
+            url: '/story/{user_id}',
+            templateUrl: 'templates/main/story.html',
+        },
+
+        {
+            name: 'he.he_story',
+            url: '/story/{user_id}',
+            templateUrl: 'templates/main/story.html',
+        },
 
         {
             name: 'mjs',

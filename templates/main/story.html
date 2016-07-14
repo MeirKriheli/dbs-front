@@ -1,4 +1,3 @@
-<auth-private>
 	<div id="mjs-page-container" ng-controller="MjsController as mjsCtrl">
 		<div id="mjs-header-wrapper">
 			<div class="mjs-header">
@@ -26,24 +25,17 @@
 				</div>
 				<div id="silhouette" class="silhouette">
 					<!-- <icon position="[-524, -566]" class="silhouette__avatar"></icon> -->
-					<img gravatar-src="mjsCtrl.mjs.latest.email" gravatar-default="identicon" gravatar-size="100"/>
+					<img gravatar-src="mjsCtrl.user.hash" gravatar-default="identicon" gravatar-size="100"/>
 					<h1 class="silhouette__description">
 						<en>The story of</en>
 						<he>הסיפור של</he><br>
-						<ng-switch on="mjsCtrl.in_rename_mode">
-							<span class="silhouette__description__username" ng-switch-when="false" ng-click="mjsCtrl.in_rename_mode = !mjsCtrl.in_rename_mode">
-								{{mjsCtrl.auth.user.name||(lang=='en'?"[click to enter name]":
-                                                       "[לחץ להכניס שם]")}}
-								<icon class="edit-branch-icon username" position="[-231, -127]" ng-click="mjsCtrl.in_rename_mode = !mjsCtrl.in_rename_mode"></icon>
-							</span>
-							<input ng-switch-when="true" maxlength="12" class="rename"
-              focus="true" type="text" ng-model="username" value="{{mjsCtrl.auth.user.name}}" alter-username/>
-						</ng-switch>
+							<span class="silhouette__description__username">
+                {{mjsCtrl.user.name}}
 					</h1>
 				</div>
 				<div class="share-item">
-          <share href="mjsCtrl.public_url" link text="My jewish story">
-        </div>
+          <share href="mjsCtrl.public_url" link text="A jewish story">
+	      </div>
 			</div>
 		</div>
 		<nav class="mjs-menu">
@@ -57,21 +49,12 @@
 					</div>
 
 					<div class="clickable-area" ng-if="(branch > 0) && (branch < 5)" ng-click="mjsCtrl.navigate_to_branch(branch)">
-						<ng-switch on="mjsCtrl.branch_edit_status[branch]">
-							<div ng-switch-when="false" class="branch_name">
-								{{mjsCtrl.mjs._latest.story_branches[branch-1]}}
+							<div class="branch_name">
+								{{mjsCtrl.user.story_branches[branch-1]}}
 								<div class="branch_name__num">
-									({{mjsCtrl.mjs.items_counters[branch-1]}})
+									({{mjsCtrl.items_counters[branch-1]}})
 								</div>
 							</div>
-							<div ng-switch-when="true">
-								<input  class="rename"
-										focus="true"
-										maxlength="26"
-										ng-model="branch_name"
-										alter-mjs-branch />
-							</div>
-						</ng-switch>
 					</div>
 
 					<div ng-if="branch == 5" class="branch_name" ng-click="mjsCtrl.navigate_to_branch(branch)">
@@ -80,7 +63,6 @@
 						<div class="branch_name__num">(0)</div>
 					</div>
 
-					<icon ng-if="(branch > 0) && (branch < 5) && !mjsCtrl.branch_edit_status[branch]" class="edit-branch-icon" position="[-231, -127]" ng-click="mjsCtrl.toggle_branch_edit(branch)"></icon>
 	    		</li>
 			</ul>
 	    </nav>
@@ -93,4 +75,4 @@
 	    	</item-preview>
 		</div>
 	</div>
-</auth-private>
+
